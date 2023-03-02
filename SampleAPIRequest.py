@@ -4,7 +4,6 @@ import json
 import pandas as pd
 
 
-
 def sep(n, character = '-'):
     block = ""
     for i in range(0,n):
@@ -24,30 +23,32 @@ headers = {
 session = Session()
 session.headers.update(headers)
 
-try:
-    response = session.get(url, params=parameters)
-    data = json.loads(response.text)
-    print(data['status'])
-    print("success!!!")
 
 
-
-
-
-    # print(data['data'][1])
-    # print(data['data'][2])
-    # print(data['timestamp'])
-    # print(data[0]['name'])
-    # print(data['quote'])
-except (ConnectionError, Timeout, TooManyRedirects) as e:
-    print(e)
-
-dataSets = {}
+dataSets = []
+dataFramesList = {}
 def init():
+    column_names = ['CurrentPrice', '24 Hour Volume', '24 Hour Volume Change', 'Hourly Percentage Change',
+                    'Daily Percentage Change', 'Weekly Percentage Change', 'Market Cap', 'Market Dominance Number',
+                    'Fully Diluted Market Cap']
     for currencies in data['data']:
-        df = pd.DataFrame({'CurrentPrice',"24 Hour Volume", "24 Hour Volume Change", "Hourly Percentage Change", "Daily Percentage Change",
-                          "Weekly Percentage Change", "Market Cap", "Market Dominance Number", "Fully Diluted Market Cap"})
-        dataSets[currencies] = df
+        df = pd.DataFrame(columns=column_names)
+        dataSets.append(df)
+        index = dataSets.index(df)
+        dataFramesList[id(currencies)] = index
+        currPrice = currencies['quote']['USD']['price']
+        dayVol = currencies['quote']['USD']['volume_24h']
+        delDayVol = currencies['quote']['USD']['volume_change_24h']
+        hrDelPercent = currencies['quote']['USD']['percent_change_1h']
+        dayDelPercent = currencies['quote']['USD']['percent_change_24h']
+        weekDelPercent = currencies['quote']['USD']['percent_change_7d']
+        cap = currencies['quote']['USD']['percent_change_7d']
+        domNum = currencies['quote']['USD']['percent_change_7d']
+        fdmc = currencies['quote']['USD']['fully_diluted_market_cap']
+        timestamp = data['status']['timestamp']
+        lastUpdated = currencies['last_updated']
+        currPrice = currencies['price']
+
 
 def printData():
     for currencies in data['data']:
@@ -63,18 +64,29 @@ def printData():
         fdmc = currencies['quote']['USD']['fully_diluted_market_cap']
         timestamp = data['status']['timestamp']
         lastUpdated = currencies['last_updated']
-        # currPrice = currencies['price']
+        currPrice = currencies['price']
         sep(40)
         print(currencies['name'])
         print(currPrice,dayVol,delDayVol,hrDelPercent,dayDelPercent,weekDelPercent,cap,domNum,timestamp,lastUpdated)
         sep(40)
 
 
+try:
+    response = session.get(url, params=parameters)
+    data = json.loads(response.text)
+    print(data['status'])
+    print("success!!!")
+    init()
 
+except (ConnectionError, Timeout, TooManyRedirects) as e:
+    print(e)
 
-printData()
+# printData()
+# init()
+
 sep(100)
 print(dataSets)
 sep(100)
-init()
 print(dataSets)
+
+
